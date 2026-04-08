@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Driver Plan">
+<meta name="theme-color" content="#0a1628">
+<title>Driver Improvement Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a1628;
+    --surface: #111e35;
+    --surface2: #1a2d4a;
+    --border: rgba(255,255,255,0.07);
+    --accent: #4ade80;
+    --accent2: #facc15;
+    --danger: #f87171;
+    --text: #f0f4ff;
+    --muted: #6b7fa3;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,22,40,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: env(safe-area-inset-top, 12px) 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .header-eyebrow { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+  .header-title { font-size: 18px; font-weight: 600; }
+  .keythought {
+    margin-top: 10px;
+    background: rgba(74,222,128,0.08);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  /* ── Nav tabs ── */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 14px 20px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s;
+    -webkit-appearance: none;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #0a1628;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Main content ── */
+  .content { padding: 16px 20px 40px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .card-grid .card { margin-bottom: 0; }
+  .card-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
+  .card-value { font-size: 15px; font-weight: 500; }
+
+  /* ── Section heading ── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 8px;
+  }
+
+  /* ── Issue list ── */
+  .issue { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .issue:last-child { border-bottom: none; padding-bottom: 0; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .dot-red { background: var(--danger); }
+  .dot-green { background: var(--accent); }
+  .issue-body { flex: 1; }
+  .issue-text { font-size: 14px; font-weight: 500; }
+  .issue-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .strike { text-decoration: line-through; color: var(--muted); }
+
+  /* ── Checklist ── */
+  .check-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:active { opacity: 0.7; }
+  .checkbox {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.18s;
+  }
+  .checkbox.checked { background: var(--accent); border-color: var(--accent); }
+  .checkmark { display: none; font-size: 13px; color: #0a1628; font-weight: 700; }
+  .checkbox.checked .checkmark { display: block; }
+  .check-label { font-size: 14px; font-weight: 400; transition: color 0.18s; }
+  .check-label.done { color: var(--muted); text-decoration: line-through; }
+  .check-count { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+  /* ── Drill steps ── */
+  .drill-step { display: flex; gap: 14px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .drill-step:last-child { border-bottom: none; }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(250,204,21,0.1);
+    color: var(--accent2);
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-text { font-size: 14px; padding-top: 3px; }
+
+  /* ── Gains ── */
+  .gain-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .gain-row:last-child { border-bottom: none; }
+  .gain-label { font-size: 13px; min-width: 110px; }
+  .gain-bar-wrap { flex: 1; height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .gain-bar { height: 100%; border-radius: 99px; background: var(--accent); }
+  .gain-val { font-family: var(--mono); font-size: 12px; color: var(--accent); min-width: 55px; text-align: right; }
+
+  /* ── Session tracker ── */
+  .field-group { margin-bottom: 12px; }
+  .field-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .fields-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  select, input[type=number] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 10px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select:focus, input[type=number]:focus { outline: none; border-color: var(--accent); }
+  .add-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0a1628;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: opacity 0.15s;
+    margin-top: 4px;
+  }
+  .add-btn:active { opacity: 0.8; }
+  .session-log { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .session-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .entry-meta { font-size: 12px; color: var(--muted); }
+  .entry-dist { font-family: var(--mono); font-size: 16px; font-weight: 500; }
+  .delta-pos { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-left: 6px; }
+  .delta-neg { font-family: var(--mono); font-size: 11px; color: var(--danger); margin-left: 6px; }
+  .empty-state { text-align: center; padding: 30px 0; color: var(--muted); font-size: 13px; }
+
+  /* ── Swing feel badge ── */
+  .feel-badge {
+    display: inline-block;
+    background: rgba(250,204,21,0.1);
+    border: 1px solid rgba(250,204,21,0.25);
+    color: var(--accent2);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 99px;
+    margin: 4px 4px 4px 0;
+  }
+
+  /* ── Safe area bottom ── */
+  .safe-bottom { height: env(safe-area-inset-bottom, 20px); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-eyebrow">Left-handed · Driver</div>
+      <div class="header-title">Driver Improvement Plan</div>
+    </div>
+    <div style="font-size:22px">🏌️</div>
+  </div>
+  <div class="keythought">"Stay behind it and launch it up."</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('setup')">Setup</button>
+  <button class="tab" onclick="showTab('swing')">Swing</button>
+  <button class="tab" onclick="showTab('drill')">Drill</button>
+  <button class="tab" onclick="showTab('checklist')">Pre-shot</button>
+  <button class="tab" onclick="showTab('tracker')">Tracker</button>
+</div>
+
+<!-- SETUP -->
+<div class="content">
+<div id="tab-setup" class="panel active">
+
+  <div class="section-label">Issues to fix</div>
+  <div class="card">
+    <div class="issue">
+      <div class="dot dot-red"></div>
+      <div class="issue-body">
+        <div class="issue-text">Hip push toward target</div>
+        <div class="issue-sub">Downward strike → less launch → more spin → distance loss</div>
+      </div>
+    </div>
+    <div class="issue">
+      <div class="dot dot-red"></div>
+      <div class="issue-body">
+        <div class="issue-text">Swinging over target</div>
+        <div class="issue-sub">Leftward path → reduced efficiency</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Correct setup</div>
+  <div class="card-grid">
+    <div class="card"><div class="card-label">Ball position</div><div class="card-value">Inside right heel</div></div>
+    <div class="card"><div class="card-label">Weight</div><div class="card-value">55–60% back foot</div></div>
+    <div class="card"><div class="card-label">Spine tilt</div><div class="card-value">Away from target</div></div>
+    <div class="card"><div class="card-label">Tee height</div><div class="card-value">½ ball above crown</div></div>
+  </div>
+
+  <div class="section-label">Expected gains</div>
+  <div class="card">
+    <div class="gain-row">
+      <div class="gain-label">Distance</div>
+      <div class="gain-bar-wrap"><div class="gain-bar" style="width:80%"></div></div>
+      <div class="gain-val">+10–25m</div>
+    </div>
+    <div class="gain-row">
+      <div class="gain-label">Rollout</div>
+      <div class="gain-bar-wrap"><div class="gain-bar" style="width:60%"></div></div>
+      <div class="gain-val">More</div>
+    </div>
+    <div class="gain-row">
+      <div class="gain-label">Approach club</div>
+      <div class="gain-bar-wrap"><div class="gain-bar" style="width:50%;background:#60a5fa"></div></div>
+      <div class="gain-val" style="color:#60a5fa">Shorter</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SWING -->
+<div id="tab-swing" class="panel">
+
+  <div class="section-label">Swing cues</div>
+  <div class="card">
+    <div class="issue">
+      <div class="dot dot-red"></div>
+      <div class="issue-body">
+        <div class="issue-text strike">Swing over target</div>
+      </div>
+    </div>
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body">
+        <div class="issue-text">Swing slightly up and out to the right</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Three distance keys</div>
+  <div class="card">
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body">
+        <div class="issue-text">Hit UP on the ball</div>
+        <div class="issue-sub">Feel: "Launch it high"</div>
+      </div>
+    </div>
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body">
+        <div class="issue-text">Stay behind the ball</div>
+        <div class="issue-sub">Chest behind ball at impact</div>
+      </div>
+    </div>
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body">
+        <div class="issue-text">Controlled speed</div>
+        <div class="issue-sub">80–85% swing — not full send</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Strike feel</div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">Aim for centre to slight toe contact</div>
+    <span class="feel-badge">Centre strike</span>
+    <span class="feel-badge">Slight toe</span>
+  </div>
+
+  <div class="section-label">Cricket analogy</div>
+  <div class="card" style="border-color:rgba(74,222,128,0.2)">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Think of it like a</div>
+    <div style="font-size:15px;font-weight:500;">Clean straight drive with slight elevation toward mid-on</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px;">Not a flat drive. Not a slog. Elevated and clean.</div>
+  </div>
+
+  <div class="section-label">Watch for</div>
+  <div class="card">
+    <div class="issue">
+      <div class="dot" style="background:var(--accent2)"></div>
+      <div class="issue-body">
+        <div class="issue-text">Push right = OK initially</div>
+        <div class="issue-sub">Means you've stopped swinging over the top — it'll straighten as you adjust</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DRILL -->
+<div id="tab-drill" class="panel">
+
+  <div class="section-label">Range drill — 10 balls</div>
+  <div class="card">
+    <div class="drill-step"><div class="step-num">1</div><div class="step-text">Ball inside right heel</div></div>
+    <div class="drill-step"><div class="step-num">2</div><div class="step-text">Chest behind ball</div></div>
+    <div class="drill-step"><div class="step-num">3</div><div class="step-text">Tee high — half ball above crown</div></div>
+    <div class="drill-step"><div class="step-num">4</div><div class="step-text">Feel: hit up + slight toe strike</div></div>
+    <div class="drill-step"><div class="step-num">5</div><div class="step-text">80–85% effort — controlled speed</div></div>
+  </div>
+
+  <div class="section-label">Expected result</div>
+  <div class="card" style="border-color:rgba(74,222,128,0.2)">
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body"><div class="issue-text">Higher launch</div></div>
+    </div>
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body"><div class="issue-text">Stronger, more penetrating flight</div></div>
+    </div>
+    <div class="issue">
+      <div class="dot dot-green"></div>
+      <div class="issue-body"><div class="issue-text">More distance — +10 to 25m</div></div>
+    </div>
+  </div>
+
+  <div class="section-label">What to track per session</div>
+  <div class="card">
+    <div class="issue">
+      <div class="dot" style="background:var(--muted)"></div>
+      <div class="issue-body"><div class="issue-text">Launch height</div></div>
+    </div>
+    <div class="issue">
+      <div class="dot" style="background:var(--muted)"></div>
+      <div class="issue-body"><div class="issue-text">Strike location (heel / centre / toe)</div></div>
+    </div>
+    <div class="issue">
+      <div class="dot" style="background:var(--muted)"></div>
+      <div class="issue-body"><div class="issue-text">Distance on best strikes</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CHECKLIST -->
+<div id="tab-checklist" class="panel">
+
+  <div class="section-label">Pre-shot routine</div>
+  <div id="check-count" class="check-count">0 of 5 checked</div>
+  <div class="card" id="checklist-card"></div>
+
+  <div style="margin-top:16px">
+    <button class="add-btn" onclick="resetChecks()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">Reset checklist</button>
+  </div>
+
+</div>
+
+<!-- TRACKER -->
+<div id="tab-tracker" class="panel">
+
+  <div class="section-label">Log a session</div>
+  <div class="card">
+    <div class="fields-row" style="margin-bottom:10px;">
+      <div>
+        <div class="field-label">Distance (m)</div>
+        <input type="number" id="t-dist" placeholder="240" min="100" max="400">
+      </div>
+      <div>
+        <div class="field-label">Strike</div>
+        <select id="t-strike">
+          <option value="">–</option>
+          <option>Heel</option>
+          <option>Centre</option>
+          <option>Centre-toe</option>
+          <option>Toe</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">Launch</div>
+        <select id="t-launch">
+          <option value="">–</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addSession()">+ Log session</button>
+  </div>
+
+  <div class="section-label">Session history</div>
+  <div class="session-log" id="session-log">
+    <div class="empty-state">No sessions logged yet.<br>Hit some balls and track your progress.</div>
+  </div>
+
+</div>
+</div><!-- /content -->
+
+<div class="safe-bottom"></div>
+
+<script>
+// Tab switching
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Checklist
+const checks = [
+  "Ball inside right heel",
+  "Chest behind ball",
+  "No hip push forward",
+  "Swing up and slightly right",
+  "80–85% effort"
+];
+let checkStates = JSON.parse(localStorage.getItem('driver-checks') || '[]') || checks.map(() => false);
+if (checkStates.length !== checks.length) checkStates = checks.map(() => false);
+
+function renderChecklist() {
+  const card = document.getElementById('checklist-card');
+  card.innerHTML = '';
+  let count = checkStates.filter(Boolean).length;
+  document.getElementById('check-count').textContent = count + ' of ' + checks.length + ' checked';
+  checks.forEach((c, i) => {
+    const row = document.createElement('div');
+    row.className = 'check-item';
+    row.innerHTML = `<div class="checkbox${checkStates[i] ? ' checked' : ''}" id="cb-${i}"><span class="checkmark">✓</span></div><div class="check-label${checkStates[i] ? ' done' : ''}" id="cl-${i}">${c}</div>`;
+    row.onclick = () => {
+      checkStates[i] = !checkStates[i];
+      localStorage.setItem('driver-checks', JSON.stringify(checkStates));
+      renderChecklist();
+    };
+    card.appendChild(row);
+  });
+}
+function resetChecks() {
+  checkStates = checks.map(() => false);
+  localStorage.setItem('driver-checks', JSON.stringify(checkStates));
+  renderChecklist();
+}
+renderChecklist();
+
+// Session tracker
+let sessions = JSON.parse(localStorage.getItem('driver-sessions') || '[]');
+
+function addSession() {
+  const dist = document.getElementById('t-dist').value;
+  const strike = document.getElementById('t-strike').value;
+  const launch = document.getElementById('t-launch').value;
+  if (!dist && !strike && !launch) return;
+  const date = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+  sessions.unshift({ date, dist: dist ? parseInt(dist) : null, strike, launch });
+  localStorage.setItem('driver-sessions', JSON.stringify(sessions));
+  document.getElementById('t-dist').value = '';
+  document.getElementById('t-strike').value = '';
+  document.getElementById('t-launch').value = '';
+  renderSessions();
+}
+
+function renderSessions() {
+  const log = document.getElementById('session-log');
+  if (!sessions.length) {
+    log.innerHTML = '<div class="empty-state">No sessions logged yet.<br>Hit some balls and track your progress.</div>';
+    return;
+  }
+  log.innerHTML = sessions.map((s, i) => {
+    const prev = sessions[i + 1];
+    let delta = '';
+    if (prev && prev.dist && s.dist) {
+      const d = s.dist - prev.dist;
+      if (d > 0) delta = `<span class="delta-pos">+${d}m</span>`;
+      else if (d < 0) delta = `<span class="delta-neg">${d}m</span>`;
+    }
+    return `<div class="session-entry">
+      <div>
+        <div class="entry-meta">${s.date} · ${s.strike || '–'} · ${s.launch || '–'} launch</div>
+      </div>
+      <div>${s.dist ? `<span class="entry-dist">${s.dist}m</span>${delta}` : '<span style="color:var(--muted);font-size:13px">–</span>'}</div>
+    </div>`;
+  }).join('');
+}
+renderSessions();
+</script>
+</body>
+</html>
